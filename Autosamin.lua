@@ -1,90 +1,143 @@
--- Auto Harvest Menu (sấm sét + tuyết rơi)
--- By AdminVN Custom
+-- Grow Garden AdminVN Script
+-- Menu Vip
+-- By Samin
 
 local player = game.Players.LocalPlayer
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+local gui = Instance.new("ScreenGui")
+gui.Parent = player:WaitForChild("PlayerGui")
 gui.ResetOnSpawn = false
 
--- Khung menu
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 250, 0, 150)
-frame.Position = UDim2.new(0.5, -125, 0.5, -75)
-frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-frame.BackgroundTransparency = 0.3
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.Draggable = true
+-- Gradient nền
+local gradientFrame = Instance.new("Frame", gui)
+gradientFrame.Size = UDim2.new(0, 300, 0, 350)
+gradientFrame.Position = UDim2.new(0.5, -150, 0.5, -175)
+gradientFrame.BackgroundTransparency = 0
+gradientFrame.Active = true
+gradientFrame.Draggable = true
 
--- Icon sấm sét động
-local lightning = Instance.new("ImageLabel", frame)
-lightning.Size = UDim2.new(0, 100, 0, 100)
-lightning.Position = UDim2.new(0.5, -50, 0, -40)
-lightning.BackgroundTransparency = 1
-lightning.Image = "rbxassetid://391053117" -- icon sấm sét
-lightning.ImageColor3 = Color3.fromRGB(255, 255, 0)
+local uiGradient = Instance.new("UIGradient", gradientFrame)
+uiGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 100)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 150, 255))
+}
+uiGradient.Rotation = 45
 
--- Hiệu ứng xoay sấm sét
 task.spawn(function()
-	while task.wait() do
-		lightning.Rotation = (lightning.Rotation + 1) % 360
-	end
+    while task.wait(0.05) do
+        uiGradient.Rotation = uiGradient.Rotation + 1
+    end
 end)
 
--- Nút bật/tắt
-local toggle = Instance.new("TextButton", frame)
-toggle.Size = UDim2.new(0, 200, 0, 50)
-toggle.Position = UDim2.new(0.5, -100, 1, -60)
-toggle.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-toggle.Text = "Auto Harvest: OFF"
-toggle.TextScaled = true
-toggle.TextColor3 = Color3.new(1, 1, 1)
-toggle.Font = Enum.Font.GothamBold
-toggle.AutoButtonColor = true
+-- Viền phát sáng
+local stroke = Instance.new("UIStroke", gradientFrame)
+stroke.Thickness = 3
+stroke.Color = Color3.fromRGB(255, 255, 255)
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
-local auto = false
-toggle.MouseButton1Click:Connect(function()
-	auto = not auto
-	if auto then
-		toggle.Text = "Auto Harvest: ON"
-		toggle.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-	else
-		toggle.Text = "Auto Harvest: OFF"
-		toggle.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-	end
-end)
+-- Tiêu đề
+local title = Instance.new("TextLabel", gradientFrame)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.BackgroundTransparency = 1
+title.Text = "🌩 Grow Garden Menu 🌩"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Font = Enum.Font.GothamBold
+title.TextScaled = true
 
--- Hạt tuyết rơi
-task.spawn(function()
-	while true do
-		local snow = Instance.new("Frame", gui)
-		snow.Size = UDim2.new(0, math.random(2, 5), 0, math.random(2, 5))
-		snow.Position = UDim2.new(math.random(), 0, 0, 0)
-		snow.BackgroundColor3 = Color3.new(1, 1, 1)
-		snow.BorderSizePixel = 0
-		game:GetService("TweenService"):Create(snow, TweenInfo.new(math.random(3, 6)), {Position = UDim2.new(snow.Position.X.Scale, 0, 1, 0)}):Play()
-		game.Debris:AddItem(snow, 6)
-		task.wait(0.05)
-	end
-end)
+-- Container nút
+local buttonContainer = Instance.new("Frame", gradientFrame)
+buttonContainer.Size = UDim2.new(1, -20, 1, -60)
+buttonContainer.Position = UDim2.new(0, 10, 0, 50)
+buttonContainer.BackgroundTransparency = 1
 
--- Hàm click trái cây
-local function clickPart(part)
-	local cd = part:FindFirstChildOfClass("ClickDetector")
-	if cd then
-		fireclickdetector(cd)
-	end
+-- Hàm tạo nút
+local function createButton(text, callback)
+    local btn = Instance.new("TextButton", buttonContainer)
+    btn.Size = UDim2.new(1, 0, 0, 40)
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextScaled = true
+    btn.Text = text
+    btn.MouseButton1Click:Connect(callback)
+
+    local s = Instance.new("UIStroke", btn)
+    s.Color = Color3.fromRGB(255, 255, 0)
+    s.Thickness = 2
+    return btn
 end
 
--- Auto harvest loop
+-- Chức năng Auto Harvest
+local autoHarvest = false
+createButton("Auto Harvest Fruit", function()
+    autoHarvest = not autoHarvest
+end)
+
+-- Chức năng Auto Sell
+local autoSell = false
+createButton("Auto Sell", function()
+    autoSell = not autoSell
+end)
+
+-- Chức năng Auto Replant
+local autoReplant = false
+createButton("Auto Replant", function()
+    autoReplant = not autoReplant
+end)
+
+-- TP to Fruit
+createButton("TP to Fruit", function()
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj.Name == "Fruit" and obj:IsA("Part") then
+            player.Character:MoveTo(obj.Position)
+            break
+        end
+    end
+end)
+
+-- Nút đóng menu
+local menuVisible = true
+createButton("Close Menu (Press M)", function()
+    gradientFrame.Visible = false
+    menuVisible = false
+end)
+
+-- Toggle bằng phím M
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.M then
+        menuVisible = not menuVisible
+        gradientFrame.Visible = menuVisible
+    end
+end)
+
+-- Hàm click Part
+local function clickPart(part)
+    local cd = part:FindFirstChildOfClass("ClickDetector")
+    if cd then fireclickdetector(cd) end
+end
+
+-- Loop chính
 task.spawn(function()
-	while true do
-		if auto then
-			for _, obj in ipairs(workspace:GetDescendants()) do
-				if obj.Name == "Fruit" and (obj:IsA("Model") or obj:IsA("Part")) then
-					clickPart(obj)
-				end
-			end
-		end
-		task.wait(1)
-	end
+    while task.wait(1) do
+        if autoHarvest then
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj.Name == "Fruit" and (obj:IsA("Part") or obj:IsA("Model")) then
+                    clickPart(obj)
+                end
+            end
+        end
+        if autoSell then
+            local npc = workspace:FindFirstChild("SellNPC")
+            if npc and npc:FindFirstChildOfClass("ClickDetector") then
+                clickPart(npc)
+            end
+        end
+        if autoReplant then
+            -- Giả sử có Part tên "Soil" để trồng lại
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj.Name == "Soil" and obj:IsA("Part") then
+                    clickPart(obj)
+                end
+            end
+        end
+    end
 end)
